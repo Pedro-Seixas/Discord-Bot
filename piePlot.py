@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from topUsers import sort_users
 def create_graph():
+  plt.figure(figsize=(10,14))
   plt.style.use("fivethirtyeight")
   table = sort_users()
   slices = [int(table[0][1]),int(table[1][1]),int(table[2][1]),int(table[3][1]),int(table[4][1])]
@@ -11,6 +12,8 @@ def create_graph():
   
   plt.pie(slices, labels=labels, colors=colors, autopct=lambda p: '{:.0f}'.format(p * sum(slices) / 100), startangle=90, explode=[0.1, 0, 0, 0,0], shadow=True, wedgeprops=wedgeprops, textprops=text)
   
-  plt.title("Users que mais enviaram memes no MemedroidBot",fontsize='large',fontweight='bold')
+  plt.title("Top 5 Uploader Que Mais Enviaram Memes pelo MemedroidBot",fontsize=20,fontweight='bold')
   plt.tight_layout()
-  plt.savefig("topUsersPieChart.png", transparent=False, bbox_inches='tight')
+  plt.savefig("topUsersPieChart.png", transparent=False, dpi=299)
+
+create_graph()
