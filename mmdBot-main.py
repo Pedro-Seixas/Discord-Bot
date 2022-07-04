@@ -166,7 +166,12 @@ class WebScrapping:
                         self.insert_database(links, username)
                         await asyncio.sleep(self.delay)
                         countI = countI + 1
-                    else:
+                    else: 
+                        print(counterImage)
+                        print(counterGif)
+                        print(countI)
+                        print(countG)
+                        countI = countI + 1
                         print("Already Exists on DB, skipping to the next meme")
                         continue
 
@@ -195,7 +200,12 @@ class WebScrapping:
 
                         countG = countG + 1   
                     else:
-                        print("Ja existe o meme no banco de dados, pulando pro próximo")
+                        print(counterImage)
+                        print(counterGif)
+                        print(countI)
+                        print(countG)
+                        countI = countG + 1
+                        print("Already Exists on DB, skipping to the next meme")
                         continue
 
         if countI == counterImage and countG == counterGif and (self.stop_bot == 0 or self.stop_bot == 2):
