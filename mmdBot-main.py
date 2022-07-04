@@ -6,6 +6,7 @@ from discord_components import DiscordComponents, Button
 from discord.ext import commands
 import mysql.connector
 from mysql.connector import Error
+from piePlot import create_graph
 
 
 client = discord.Client()
@@ -324,7 +325,10 @@ async def memes(ctx):
     cursor.execute(consulta_sql)
     linhas = cursor.fetchall()
     total = cursor.rowcount
-    await ctx.reply(f"O bot ja enviou {total} memes!")
+    create_graph()
+    
+    await ctx.channel.send(f"O bot ja enviou {total} memes!", file =discord.File("topUsersPieChart.png"))
+    
 
 TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.YijYSg.j7H5l_lK0bkyLgoEGlmhPYZycC4"
 
