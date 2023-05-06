@@ -309,7 +309,7 @@ async def memes(ctx):
     await ctx.channel.send(f"O bot ja enviou {last_id} memes!", file =discord.File("topUsersPieChart.png"))
     conn.close()
     
+#
+#TOKEN = TOKEN GOES HERE
 
-TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.G5oWxX.kTjrDWc0HVoOLWTYvPYfeHCvnkhL_zNEC0tbcA"
-
-client.run(TOKEN)
+#client.run(TOKEN)
