@@ -1,20 +1,18 @@
-import mysql.connector
-from mysql.connector import Error
+import sqlite3
 
 def sort_users():
         try:
-            connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-            update_top_users = "SELECT autor, count(autor) as repeticoes FROM memes_recebidos GROUP BY autor ORDER BY repeticoes DESC LIMIT 5"
-            cursor = connection.cursor()
+            conn = sqlite3.connect('memes.db')
+            cursor = conn.cursor()
+            update_top_users = "SELECT username, count(username) as repeticoes FROM memes_sent GROUP BY username ORDER BY repeticoes DESC LIMIT 5"
             cursor.execute(update_top_users)
-            linhas = cursor.fetchall()
+            lines = cursor.fetchall()
  
-        except Error as erro:
-            print(erro)
+        except sqlite3.Error as error:
+            print(error)
 
         finally:
-            if(connection.is_connected()):
-                connection.close()
-                print("Conexao ao MySQL finalizada")
+            conn.close()
+            print("DB Connection Closed")
         
-        return linhas
+        return lines

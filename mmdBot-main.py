@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 import asyncio
 from discord_components import DiscordComponents, Button
 from discord.ext import commands
-import mysql.connector
-from mysql.connector import Error
+import sqlite3
 from piePlot import create_graph
 
 
@@ -17,86 +16,61 @@ DiscordComponents(client)
 class WebScrapping:
     def see_id_database(self):
         try:
-            connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-            consult_sql = "select * from memes_enviados"
-            cursor = connection.cursor()
-            cursor.execute(consult_sql)
-            cursor.fetchall()
-    
-        except Error as erro:
-            print(erro)
-
-        last_id = cursor.rowcount
-
-        return last_id 
-
-    def insert_database_memes_enviados(self,autor):
-
-        try:
-            connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-            insert_memes = """INSERT INTO memes_enviados (autor) VALUES (%s)"""
-            cursor = connection.cursor()
-            cursor.execute(insert_memes,(autor,))
-            connection.commit()
-            print(cursor.rowcount, "Inserted")
-            cursor.close()
-
-        except Error as error:
+            conn = sqlite3.connect('memes.db')
+            last_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+            conn.commit()
+            conn.close()
+            return last_id 
+        
+        except sqlite3.Error as error:
             print(error)
 
-        finally:
-            if(connection.is_connected()):
-                connection.close()
-                print("Connection MySQL Ended")
 
-    def check_database_memes_recebidos(self, link): 
+    def check_database(self, link): 
         try:
-            connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-            consulta_sql = "SELECT link, COUNT(*) FROM memes_recebidos WHERE link = %s GROUP BY link"
-            cursor = connection.cursor()
-            cursor.execute(consulta_sql,(link,))
-            cursor.fetchall()
-    
-        except Error as erro:
-            print(erro)
+            conn = sqlite3.connect('memes.db')
+            cursor = conn.cursor()
+            check_db = "SELECT link, COUNT(*) FROM memes_sent WHERE link = '{}' GROUP BY link".format(link)
+            cursor.execute(check_db)
+            result = cursor.fetchall()
 
-        finally:
-            if cursor.rowcount == 0:
+            if len(result) == 0:
                 print("Meme Does Not Exist On DataBase")
                 return 1
             else:
                 print("Meme Exists On DataBase")
                 return 0
 
-    def insert_database(self, link, autor):
-        try:
-            connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-            inserir_memes = """INSERT INTO memes_recebidos (autor,link) VALUES (%s,%s)"""
-            cursor = connection.cursor()
-            cursor.execute(inserir_memes,(autor,link,))
-            connection.commit()
-            print(cursor.rowcount, "Inserted")
-            cursor.close()
-
-        except Error as error:
+        except sqlite3.Error as error:
             print(error)
 
         finally:
-            if(connection.is_connected()):
-                connection.close()
-                print("Connection MySQL Ended")
+            conn.close()
 
-    def __init__(self, discord_channel, pagina, delay, stop_bot):
+    def insert_database(self, link, autor):
+        try:
+            conn = sqlite3.connect('memes.db')
+            cursor = conn.cursor()
+            insert_memes = """INSERT INTO memes_sent (username, link) VALUES (?,?)"""
+            cursor.execute(insert_memes,(autor,link,))
+            conn.commit()
+            print(cursor.rowcount, "Inserted")
+            conn.close()
+
+        except sqlite3.Error as error:
+            print(error)
+
+    def __init__(self, discord_channel, page, delay, stop_bot):
         self.discord_channel = discord_channel
-        self.pagina = pagina
+        self.page = page
         self.delay = delay
         self.stop_bot = stop_bot
 
     def change_delay(self, delay):
         self.delay = delay
 
-    def change_canal(self, canal):
-        self.discord_channel = canal
+    def change_channel(self, channel):
+        self.discord_channel = channel
 
     def change_stop_status(self, stop_bot):
         self.stop_bot = stop_bot
@@ -106,8 +80,8 @@ class WebScrapping:
         return self.stop_bot 
       
     def read_web_page(self):
-        print(self.pagina)
-        request_page = Request(self.pagina,
+        print(self.page)
+        request_page = Request(self.page,
                                headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.3'})
         page_html = urlopen(request_page).read()
         html_soup = BeautifulSoup(page_html, 'html.parser')
@@ -131,10 +105,10 @@ class WebScrapping:
                 'nav', class_="hidden")
             next_page_link = next_page.a['href']
             print(f"Next Page = {next_page_link}")
-            self.pagina = (f'https://pt.memedroid.com{next_page_link}')
+            self.page = (f'https://pt.memedroid.com{next_page_link}')
 
-    def change_page_bot(self, pagina):
-        self.pagina = pagina
+    def change_page_bot(self, page):
+        self.page = page
 
     async def both_request(self):
         memes_page = self.start_web_scrapping()
@@ -152,13 +126,13 @@ class WebScrapping:
                     links = meme.div.img['src']
                     rate = meme.span.text
                     username = meme.header.div.a.text
-
-                    if self.check_database_memes_recebidos(links) == 1:
+                    print(links)
+                    if self.check_database(links) == 1:
                         if int(rate[0]) <= 5 and rate != "100%":
-                            await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
+                            await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
                                 [Button(label = f"{rate}", style ="4", custom_id = "button5")]])
                         else:
-                            await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
+                            await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
                                 [Button(label = f"{rate}", style ="3", custom_id = "button5")]])    
                         await asyncio.sleep(0.2)
                         await channel.send(f"---------------------------------------------------------------------------------------")
@@ -182,7 +156,7 @@ class WebScrapping:
                     links = meme.source['src']
                     rate = meme.span.text
                     username = meme.header.div.a.text
-                    if self.check_database_memes_recebidos(links) == 1:
+                    if self.check_database(links) == 1:
 
                         if int(rate[0]) <= 5 and rate != "100%":
                             await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
@@ -215,39 +189,39 @@ class WebScrapping:
 
 
 
-ws = WebScrapping(915332488728031292,
+ws = WebScrapping(1104063740481122488,
                   'https://pt.memedroid.com/memes/latest', 1000, 2)
                   
 @client.event
 async def on_ready():
     #If enters/is in another server, it will leave.
     for guild in client.guilds:
-        if guild.id != 915330953918947368 and guild.id != 951157200091492392:
+        if guild.id != 1104063740481122484:
             await guild.leave()
-    print("----------Bot Iniciado------------")
+    print("----------Bot Online------------")
     print("By default, channel = memes-e-media\nDelay = 1000 seconds\nWebsite = https://pt.memedroid.com/memes/latest")
-    print("You change change this value using the ~! commands")
-    activityDiscord = discord.Game(name="~!ajuda")
+    print("You can change this value using the ~! commands")
+    activityDiscord = discord.Game(name="~!helpp")
     await client.change_presence(status=discord.Status, activity=activityDiscord)
 
 #From now on the bot is configured to answer in portuguese brazilian, since it was made exclusive for a brazilian server of friends.
 
 @client.event
 async def on_guild_join(guild):
-    if guild.id != 915330953918947368:
+    if guild.id != 1104063740481122484:
         await guild.leave()
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.reply("Comando Invalido! Use ~!ajuda para acessar a lista de comandos.")
+        await ctx.reply("Comando Invalido! Use ~!helpp para acessar a lista de comandos.")
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.reply('Complete o comando. Use ~!ajuda para acessar a lista de comandos')
+        await ctx.reply('Complete o comando. Use ~!helpp para acessar a lista de comandos')
     if isinstance(error, commands.MissingAnyRole):
         await ctx.reply('Voce não tem permissão para usar o bot, somente moderadores.')
 
 
 @client.command()
-async def ajuda(ctx):
+async def helpp(ctx):
     embed = discord.Embed(
         title='Lista de Comandos',
         colour=discord.Colour.orange()
@@ -257,10 +231,10 @@ async def ajuda(ctx):
     embed.add_field(name='**~!stop**', value='Pausar o bot', inline=False)
     embed.add_field(name='**~!timer**',
                     value='Definir o tempo em segundos entre os memes', inline=False)
-    embed.add_field(name='**~!pagina**',
+    embed.add_field(name='**~!page**',
                     value='Definir o link do site do memedroid que o bot pegará os memes', inline=False)
-    embed.add_field(name='**~!canal**',
-                    value='Definir o id do canal que o bot enviará os memes', inline=False)
+    embed.add_field(name='**~!channel**',
+                    value='Definir o id do channel que o bot enviará os memes', inline=False)
     embed.add_field(name='**~!memes**',
                     value='Para ver o número de memes já enviado pelo bot', inline=False)
     embed.add_field(name='**~!upload**',
@@ -274,7 +248,6 @@ async def ajuda(ctx):
 
 
 @client.command()
-@commands.has_any_role(915332018827579504, 928026454447505468, 915333382018334781, 915333704090525756, 959241153323106334,954865503418069012)
 async def start(ctx):
     if ws.stop_status() == 0:
         await ctx.channel.send(f"Bot já está ligado e mandando memes. Para alterar o intervalo entre os memes use ~!timer")
@@ -286,17 +259,15 @@ async def start(ctx):
 
 
 @client.command()
-@commands.has_any_role(915332018827579504, 928026454447505468, 915333382018334781, 915333704090525756, 959241153323106334,954865503418069012)
-async def canal(ctx, canal):
-    if canal.isnumeric():
-        await ctx.reply(f'Canal configurado!')
-        ws.change_canal(canal)
+async def channel(ctx, channel):
+    if channel.isnumeric():
+        await ctx.reply(f'channel configurado!')
+        ws.change_channel(channel)
     else:
-        await ctx.channel.send(f'Não é um id de canal!')
+        await ctx.channel.send(f'Não é um id de channel!')
 
 
 @client.command()
-@commands.has_any_role(915332018827579504, 928026454447505468, 915333382018334781, 915333704090525756, 959241153323106334,954865503418069012)
 async def timer(ctx, timer_escolhido):
     if timer_escolhido.isnumeric():
         ws.change_delay(int(timer_escolhido))
@@ -311,14 +282,12 @@ async def autor(ctx):
 
 
 @client.command()
-@commands.has_any_role(915332018827579504, 928026454447505468, 915333382018334781, 915333704090525756, 959241153323106334,954865503418069012)
-async def pagina(ctx, pagina_escolhida):
-    ws.change_page_bot(pagina_escolhida)
-    await ctx.reply(f'Pagina Configurada')
+async def page(ctx, page_escolhida):
+    ws.change_page_bot(page_escolhida)
+    await ctx.reply(f'page Configurada')
 
 
 @client.command()
-@commands.has_any_role(915332018827579504, 928026454447505468, 915333382018334781, 915333704090525756, 959241153323106334,954865503418069012)
 async def stop(ctx):
     ws.change_stop_status(1)
     await ctx.reply(f'**Bot Pausado**')
@@ -329,17 +298,18 @@ async def jj(ctx):
 
 @client.command()
 async def memes(ctx):
-    connection = mysql.connector.connect(host='remotemysql.com', database='lQcUi31XZz', user='lQcUi31XZz', password='8nIEHO3Rx3')
-    consulta_sql = "select * from memes_recebidos"
-    cursor = connection.cursor()
-    cursor.execute(consulta_sql)
-    linhas = cursor.fetchall()
-    total = cursor.rowcount
+    #TODO use function inside class
+    conn = sqlite3.connect('memes.db')
+    cursor = conn.cursor()
+    check_db = "SELECT COUNT(*) FROM memes_sent"
+    cursor.execute(check_db)
+    last_id = cursor.fetchone()[0]
     create_graph()
     
-    await ctx.channel.send(f"O bot ja enviou {total} memes!", file =discord.File("topUsersPieChart.png"))
+    await ctx.channel.send(f"O bot ja enviou {last_id} memes!", file =discord.File("topUsersPieChart.png"))
+    conn.close()
     
 
-TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.YijYSg.j7H5l_lK0bkyLgoEGlmhPYZycC4"
+TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.G5oWxX.kTjrDWc0HVoOLWTYvPYfeHCvnkhL_zNEC0tbcA"
 
 client.run(TOKEN)
