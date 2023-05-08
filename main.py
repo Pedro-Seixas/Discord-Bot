@@ -13,7 +13,7 @@ DiscordComponents(client)
 #(ID CHANNEL, WEBSITE LINK, DELAY)
 
 ws = WebScrapping(1104063740481122488,
-                  'https://pt.memedroid.com/memes/latest', 5, client)
+                  'https://pt.memedroid.com/memes/latest', 1000, client)
                 
 @client.event
 async def on_ready():
