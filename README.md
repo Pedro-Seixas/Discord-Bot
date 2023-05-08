@@ -1,6 +1,6 @@
 # Discord-Bot
 
-Discord Bot in python that sends memes from Memedroid
+Discord Bot in python that sends memes from Memedroid every defined interval.
 
 The application uses BeautifulSoup for WebScrapping the Memedroid website and it sends to discord using the discord.py library.
 The application uses SQLITE for storing memes links and usernames.
