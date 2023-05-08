@@ -1,25 +1,29 @@
-import discord
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 import asyncio
+import sqlite3
 from discord_components import DiscordComponents, Button
 from discord.ext import commands
-import sqlite3
-from piePlot import create_graph
-
+import discord
 
 client = discord.Client()
 client = commands.Bot(command_prefix='~!')
 DiscordComponents(client)
-
-
 class WebScrapping:
+    def __init__(self, discord_channel, page, delay, client):
+        self.discord_channel = discord_channel
+        self.page = page
+        self.delay = delay
+        self.stop_bot = 2
+        self.client = client
+
     def see_id_database(self):
         try:
             conn = sqlite3.connect('memes.db')
-            last_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            conn.commit()
-            conn.close()
+            cursor = conn.cursor()
+            check_db = "SELECT COUNT(*) FROM memes_sent"
+            cursor.execute(check_db)
+            last_id = cursor.fetchone()[0]
             return last_id 
         
         except sqlite3.Error as error:
@@ -59,12 +63,6 @@ class WebScrapping:
 
         except sqlite3.Error as error:
             print(error)
-
-    def __init__(self, discord_channel, page, delay, stop_bot):
-        self.discord_channel = discord_channel
-        self.page = page
-        self.delay = delay
-        self.stop_bot = stop_bot
 
     def change_delay(self, delay):
         self.delay = delay
@@ -112,7 +110,7 @@ class WebScrapping:
 
     async def both_request(self):
         memes_page = self.start_web_scrapping()
-        channel = client.get_channel(int(self.discord_channel))
+        channel = self.client.get_channel(int(self.discord_channel))
         counterImage = 0
         counterGif = 0
         countI = 0
@@ -185,6 +183,7 @@ class WebScrapping:
         if countI == counterImage and countG == counterGif and (self.stop_bot == 0 or self.stop_bot == 2):
             self.next_page()
             self.read_web_page()
+<<<<<<< HEAD:mmdBot-main.py
             await self.both_request()
 
 
@@ -313,3 +312,6 @@ async def memes(ctx):
 #TOKEN = TOKEN GOES HERE
 
 #client.run(TOKEN)
+=======
+            await self.both_request()
+>>>>>>> Fix:mmdWebscraping.py
