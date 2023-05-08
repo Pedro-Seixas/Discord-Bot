@@ -27,7 +27,7 @@ async def on_ready():
     activityDiscord = discord.Game(name="~!helpp")
     await client.change_presence(status=discord.Status, activity=activityDiscord)
 
-#From now on the bot is configured to answer in portuguese brazilian, since it was made exclusive for a brazilian server of friends.
+#From now on the bot is configured to answer in brazilian portuguese, since it was made exclusive for a brazilian server of friends.
 
 @client.event
 async def on_guild_join(guild):
@@ -46,13 +46,13 @@ async def on_command_error(ctx, error):
 @client.command()
 async def helpp(ctx):
     embed = discord.Embed(
-        title='Lista de Comandos',
+        title='Command List',
         colour=discord.Colour.orange()
     )
     embed.add_field(name='**~!start**',
                     value='Inicializar o bot', inline=False)
     embed.add_field(name='**~!stop**', value='Pausar o bot', inline=False)
-    embed.add_field(name='**~!timer**',
+    embed.add_field(name='**~!delay**',
                     value='Definir o tempo em segundos entre os memes', inline=False)
     embed.add_field(name='**~!page**',
                     value='Definir o link do site do memedroid que o bot pegará os memes', inline=False)
@@ -62,7 +62,7 @@ async def helpp(ctx):
                     value='Para ver o número de memes já enviado pelo bot', inline=False)
     embed.add_field(name='**~!upload**',
                     value='Para enviar um meme para o site do memedroid', inline=False)
-    embed.add_field(name='**~!autor**',
+    embed.add_field(name='**~!creator**',
                     value='Para ver o criador do bot', inline=False)
     embed.set_author(name="Memedroid Bot")
     embed.set_image(
@@ -73,7 +73,7 @@ async def helpp(ctx):
 @client.command()
 async def start(ctx):
     if ws.stop_status() == 0:
-        await ctx.channel.send(f"Bot já está ligado e mandando memes. Para alterar o intervalo entre os memes use ~!timer")
+        await ctx.channel.send(f"Bot is already on. Use ~!delay to change the delay.")
         
     else:
         await ctx.channel.send(f'**Bot Started**')
@@ -84,24 +84,24 @@ async def start(ctx):
 @client.command()
 async def channel(ctx, channel):
     if channel.isnumeric():
-        await ctx.reply(f'Channel Configured!')
+        await ctx.reply(f'Channel Set')
         ws.change_channel(channel)
     else:
-        await ctx.channel.send(f'Não é um id de channel!')
+        await ctx.channel.send(f'Is not a channel id!')
 
 
 @client.command()
-async def timer(ctx, timer_escolhido):
-    if timer_escolhido.isnumeric():
-        ws.change_delay(int(timer_escolhido))
-        await ctx.reply(f'Timer configurado para {timer_escolhido} segundos')
+async def delay(ctx, delay_escolhido):
+    if delay_escolhido.isnumeric():
+        ws.change_delay(int(delay_escolhido))
+        await ctx.reply(f'The delay was set to {delay_escolhido} seconds')
     else:
-        await ctx.reply(f'Coloque um numero em segundos!')
+        await ctx.reply(f'Must be an number in seconds')
 
 
 @client.command()
-async def autor(ctx):
-    await ctx.reply(f'O meu criador foi o Penguin (Pedro1#6199) UwU')
+async def creator(ctx):
+    await ctx.reply(f'My creator was Pedro1#6199')
 
 
 @client.command()
@@ -113,20 +113,14 @@ async def page(ctx, page_escolhida):
 @client.command()
 async def stop(ctx):
     ws.change_stop_status(1)
-    await ctx.reply(f'**Bot Pausado**')
+    await ctx.reply(f'**Bot Paused**')
 
 @client.command()
 async def memes(ctx):
-    #TODO use function inside class
-    # conn = sqlite3.connect('memes.db')
-    # cursor = conn.cursor()
-    # check_db = "SELECT COUNT(*) FROM memes_sent"
-    # cursor.execute(check_db)
-    # last_id = cursor.fetchone()[0]
     last_id = ws.see_id_database()
     create_graph()
     
-    await ctx.channel.send(f"O bot ja enviou {last_id} memes!", file =discord.File("topUsersPieChart.png"))
+    await ctx.channel.send(f"The bot has already sent {last_id} memes!", file =discord.File("topUsersPieChart.png"))
     
 
 TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.GQvs9G.xI2iudp6pa27Md_hjP4FPkuQOCvmN8mcg25YsM"
