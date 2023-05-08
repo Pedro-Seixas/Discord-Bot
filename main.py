@@ -122,6 +122,6 @@ async def memes(ctx):
     await ctx.channel.send(f"The bot has already sent {last_id} memes!", file =discord.File("topUsersPieChart.png"))
     
 
-TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.GQvs9G.xI2iudp6pa27Md_hjP4FPkuQOCvmN8mcg25YsM"
+#TOKEN = Token goes here
 
-client.run(TOKEN)
+#client.run(TOKEN)
