@@ -1,7 +1,6 @@
 import discord
 from discord_components import DiscordComponents, Button
 from discord.ext import commands
-import sqlite3
 from piePlot import create_graph
 from mmdWebscraping import WebScrapping
 
