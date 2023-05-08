@@ -116,21 +116,17 @@ async def stop(ctx):
     await ctx.reply(f'**Bot Pausado**')
 
 @client.command()
-async def jj(ctx):
-    await ctx.reply(f'**Dias sem o JayJay tiltar: 0\nRecorde até agora: 0**')
-
-@client.command()
 async def memes(ctx):
     #TODO use function inside class
-    conn = sqlite3.connect('memes.db')
-    cursor = conn.cursor()
-    check_db = "SELECT COUNT(*) FROM memes_sent"
-    cursor.execute(check_db)
-    last_id = cursor.fetchone()[0]
+    # conn = sqlite3.connect('memes.db')
+    # cursor = conn.cursor()
+    # check_db = "SELECT COUNT(*) FROM memes_sent"
+    # cursor.execute(check_db)
+    # last_id = cursor.fetchone()[0]
+    last_id = ws.see_id_database()
     create_graph()
     
     await ctx.channel.send(f"O bot ja enviou {last_id} memes!", file =discord.File("topUsersPieChart.png"))
-    conn.close()
     
 
 TOKEN = "OTUxMTU3MzI3Nzk1NDU4MDU4.GQvs9G.xI2iudp6pa27Md_hjP4FPkuQOCvmN8mcg25YsM"

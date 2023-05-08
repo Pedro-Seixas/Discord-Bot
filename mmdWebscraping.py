@@ -20,9 +20,10 @@ class WebScrapping:
     def see_id_database(self):
         try:
             conn = sqlite3.connect('memes.db')
-            last_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            conn.commit()
-            conn.close()
+            cursor = conn.cursor()
+            check_db = "SELECT COUNT(*) FROM memes_sent"
+            cursor.execute(check_db)
+            last_id = cursor.fetchone()[0]
             return last_id 
         
         except sqlite3.Error as error:
