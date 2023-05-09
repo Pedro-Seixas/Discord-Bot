@@ -36,10 +36,8 @@ class WebScrapping:
             result = cursor.fetchall()
 
             if len(result) == 0:
-                print("Meme Does Not Exist On DataBase")
                 return 1
             else:
-                print("Meme Exists On DataBase")
                 return 0
 
         except sqlite3.Error as error:
@@ -55,7 +53,6 @@ class WebScrapping:
             insert_memes = """INSERT INTO memes_sent (username, link) VALUES (?,?)"""
             cursor.execute(insert_memes,(autor,link,))
             conn.commit()
-            print(cursor.rowcount, "Inserted")
             conn.close()
 
         except sqlite3.Error as error:
@@ -71,11 +68,9 @@ class WebScrapping:
         self.stop_bot = stop_bot
       
     def stop_status(self):
-        print(self.stop_bot)
         return self.stop_bot 
       
     def read_web_page(self):
-        print(self.page)
         request_page = Request(self.page,
                                headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.3'})
         page_html = urlopen(request_page).read()
@@ -99,7 +94,6 @@ class WebScrapping:
             next_page = page_hidden.find(
                 'nav', class_="hidden")
             next_page_link = next_page.a['href']
-            print(f"Next Page = {next_page_link}")
             self.page = (f'https://pt.memedroid.com{next_page_link}')
 
     def change_page_bot(self, page):
@@ -121,7 +115,6 @@ class WebScrapping:
                     links = meme.div.img['src']
                     rate = meme.span.text
                     username = meme.header.div.a.text
-                    print(links)
                     if self.check_database(links) == 1:
                         if int(rate[0]) <= 5 and rate != "100%":
                             await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
@@ -131,17 +124,13 @@ class WebScrapping:
                                 [Button(label = f"{rate}", style ="3", custom_id = "button5")]])    
                         await asyncio.sleep(0.2)
                         await channel.send(f"---------------------------------------------------------------------------------------")
-                        print("Inserting DB")
+
                         self.insert_database(links, username)
                         await asyncio.sleep(self.delay)
+
                         countI = countI + 1
                     else: 
-                        print(counterImage)
-                        print(counterGif)
-                        print(countI)
-                        print(countG)
                         countI = countI + 1
-                        print("Already Exists on DB, skipping to the next meme")
                         continue
 
             if countG <= counterGif and meme['data-type'] == '3' and (self.stop_bot == 0 or self.stop_bot == 2):    
@@ -151,6 +140,7 @@ class WebScrapping:
                     links = meme.source['src']
                     rate = meme.span.text
                     username = meme.header.div.a.text
+
                     if self.check_database(links) == 1:
 
                         if int(rate[0]) <= 5 and rate != "100%":
@@ -162,19 +152,12 @@ class WebScrapping:
                         await asyncio.sleep(0.2)
                         await channel.send(f"---------------------------------------------------------------------------------------")
 
-                        print("Inserir database")
                         self.insert_database(links, username)
-
                         await asyncio.sleep(self.delay)
 
                         countG = countG + 1   
                     else:
-                        print(counterImage)
-                        print(counterGif)
-                        print(countI)
-                        print(countG)
                         countI = countG + 1
-                        print("Already Exists on DB, skipping to the next meme")
                         continue
 
         if countI == counterImage and countG == counterGif and (self.stop_bot == 0 or self.stop_bot == 2):
