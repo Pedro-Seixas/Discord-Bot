@@ -38,6 +38,7 @@ class WebScrapping:
             if len(result) == 0:
                 return 1
             else:
+                print("already in db")
                 return 0
 
         except sqlite3.Error as error:
@@ -88,13 +89,15 @@ class WebScrapping:
         return articles_data_type
     
     def next_page(self):
+        print("next page")
         html_page = self.read_web_page()
         
         for page_hidden in html_page:
             next_page = page_hidden.find(
                 'nav', class_="hidden")
             next_page_link = next_page.a['href']
-            self.page = (f'https://pt.memedroid.com{next_page_link}')
+            #add pt.
+            self.page = (f'https://memedroid.com{next_page_link}')
 
     def change_page_bot(self, page):
         self.page = page
@@ -117,13 +120,15 @@ class WebScrapping:
                     username = meme.header.div.a.text
                     if self.check_database(links) == 1:
                         if int(rate[0]) <= 5 and rate != "100%":
-                            await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
-                                [Button(label = f"{rate}", style ="4", custom_id = "button5")]])
+                            #await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
+                                #[Button(label = f"{rate}", style ="4", custom_id = "button5")]])
+                            print(".")
                         else:
-                            await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
-                                [Button(label = f"{rate}", style ="3", custom_id = "button5")]])    
-                        await asyncio.sleep(0.2)
-                        await channel.send(f"---------------------------------------------------------------------------------------")
+                            #await channel.send(f"**User: **{username}\n**Title:** {meme.a.text}\n{links}", components = [
+                                #[Button(label = f"{rate}", style ="3", custom_id = "button5")]])    
+                        #await asyncio.sleep(0.2)
+                        #await channel.send(f"---------------------------------------------------------------------------------------")
+                            print(".")
 
                         self.insert_database(links, username)
                         await asyncio.sleep(self.delay)
@@ -144,20 +149,22 @@ class WebScrapping:
                     if self.check_database(links) == 1:
 
                         if int(rate[0]) <= 5 and rate != "100%":
-                            await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
-                                [Button(label = f"{rate}", style ="4", custom_id = "button5")]])
+                            #await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
+                                #[Button(label = f"{rate}", style ="4", custom_id = "button5")]])
+                            print(".")
                         else:
-                            await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
-                                [Button(label = f"{rate}", style ="3", custom_id = "button4")]])    
-                        await asyncio.sleep(0.2)
-                        await channel.send(f"---------------------------------------------------------------------------------------")
+                            print(".")
+                            #await channel.send(f"**Autor: **{username}\n**Titulo:** {meme.a.text}\n{links}", components = [
+                                #[Button(label = f"{rate}", style ="3", custom_id = "button4")]])    
+                        #await asyncio.sleep(0.2)
+                        #await channel.send(f"---------------------------------------------------------------------------------------")
 
                         self.insert_database(links, username)
                         await asyncio.sleep(self.delay)
 
                         countG = countG + 1   
                     else:
-                        countI = countG + 1
+                        countG = countG + 1
                         continue
 
         if countI == counterImage and countG == counterGif and (self.stop_bot == 0 or self.stop_bot == 2):

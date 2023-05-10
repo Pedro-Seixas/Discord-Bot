@@ -12,7 +12,7 @@ DiscordComponents(client)
 #(ID CHANNEL, WEBSITE LINK, DELAY)
 
 ws = WebScrapping(1104063740481122488,
-                  'https://pt.memedroid.com/memes/latest', 1000, client)
+                  'https://pt.memedroid.com/memes/latest', 0, client)
                 
 @client.event
 async def on_ready():
@@ -122,6 +122,6 @@ async def memes(ctx):
     await ctx.channel.send(f"The bot has already sent {last_id} memes!", file =discord.File("topUsersPieChart.png"))
     
 
-#TOKEN = Token goes here
+#TOKEN =  Token Goes Here
 
 #client.run(TOKEN)
