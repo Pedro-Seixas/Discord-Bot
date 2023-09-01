@@ -1,4 +1,4 @@
-# Discord-Bot
+  # Meme-Bot
 
 Discord Bot in python that sends memes from Memedroid every defined interval.
 
